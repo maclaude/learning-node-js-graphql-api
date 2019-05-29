@@ -1,0 +1,57 @@
+{
+  "extends": [
+    "airbnb-base",
+    "prettier"
+  ],
+  "plugins": [
+    "prettier"
+  ],
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+    "prettier/prettier": [
+      "error"
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "ignoreSiblings": true,
+        "argsIgnorePattern": "res|next|^err"
+      }
+    ],
+    "no-console": 0,
+    "no-underscore-dangle": [
+      "error",
+      {
+        "allowAfterThis": true,
+        "allow": [
+          "_id",
+          "_doc"
+        ]
+      }
+    ],
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowTernary": true
+      }
+    ],
+    "prefer-destructuring": [
+      "error",
+      {
+        "object": true,
+        "array": false
+      }
+    ],
+    "no-shadow": [
+      "error",
+      {
+        "allow": [
+          "err"
+        ]
+      }
+    ]
+  }
+}
