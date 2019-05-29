@@ -12,6 +12,13 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const uuidV4 = require('uuid/v4');
+const graphqlHttp = require('express-graphql');
+
+/**
+ * Local import
+ */
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolvers = require('./graphql/resolvers');
 
 /**
  * Code
@@ -72,6 +79,15 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
+
+// Setting-up graphQL
+app.use(
+  '/graphql',
+  graphqlHttp({
+    schema: graphqlSchema,
+    rootValue: graphqlResolvers,
+  })
+);
 
 // Error Handling
 app.use((error, req, res, next) => {
