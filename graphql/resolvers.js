@@ -204,7 +204,7 @@ module.exports = {
     // If no post founded, throw an error
     if (!post) {
       const error = new Error('No post found');
-      error.code = 401;
+      error.code = 404;
       throw error;
     }
 
@@ -213,6 +213,73 @@ module.exports = {
       _id: post._id.toString(),
       createdAt: post.createdAt.toISOString(),
       updatedAt: post.updatedAt.toISOString(),
+    };
+  },
+
+  updatePost: async ({ id, postInput }, req) => {
+    // Checking user authentication status
+    if (!req.isAuth) {
+      const error = new Error('User is not authenticated');
+      error.code = 401;
+      throw error;
+    }
+
+    // Finding post by id
+    const post = await Post.findById(id).populate('creator');
+    // If no post founded, throw an error
+    if (!post) {
+      const error = new Error('No post found');
+      error.code = 404;
+      throw error;
+    }
+
+    // Checking if the post's creator is the logged in user
+    if (post.creator._id.toString() !== req.userId.toString()) {
+      const error = new Error('Not authorized');
+      error.code = 403;
+      throw error;
+    }
+
+    /**
+     * Validation
+     */
+    const errors = [];
+    // Title
+    if (
+      validator.isEmpty(postInput.title) ||
+      !validator.isLength(postInput.title, { min: 5 })
+    ) {
+      errors.push({ message: 'Title is invalid' });
+    }
+    // Content
+    if (
+      validator.isEmpty(postInput.content) ||
+      !validator.isLength(postInput.content, { min: 5 })
+    ) {
+      errors.push({ message: 'Content is invalid' });
+    }
+    // If errors, throw an error
+    if (errors.length > 0) {
+      const error = new Error('Invalid input');
+      error.data = errors;
+      error.code = 422;
+      throw error;
+    }
+
+    // Updating the post
+    post.title = postInput.title;
+    post.content = postInput.content;
+    if (postInput.imageUrl !== 'undefined') {
+      post.imageUrl = postInput.imageUrl;
+    }
+    // Saving the upadated post
+    const updatedPost = await post.save();
+
+    return {
+      ...updatedPost._doc,
+      _id: updatedPost._id.toString(),
+      createdAt: updatedPost.createdAt.toISOString(),
+      updatedAt: updatedPost.updatedAt.toISOString(),
     };
   },
 };
