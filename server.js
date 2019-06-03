@@ -21,6 +21,8 @@ const graphqlSchema = require('./graphql/schema');
 const graphqlResolvers = require('./graphql/resolvers');
 // Middlewares
 const auth = require('./middlewares/auth');
+// Utils
+const deleteFile = require('./utils/delete-file');
 
 /**
  * Code
@@ -88,6 +90,29 @@ app.use((req, res, next) => {
 
 // Setting auth status middleware
 app.use(auth);
+
+// Post image middleware
+app.put('/post-image', (req, res, next) => {
+  // Checking user authentication status
+  if (!req.isAuth) {
+    const error = new Error('User is not authenticated');
+    error.code = 401;
+    throw error;
+  }
+
+  // Checking if a file is provided
+  if (!req.file) {
+    return res.status(200).json({ message: 'No file is provided' });
+  }
+  // Deleting the file if the image is updated
+  if (req.body.oldPath) {
+    deleteFile(req.body.oldPath);
+  }
+  // Sending the response
+  return res
+    .status(201)
+    .json({ message: 'File stored', filePath: req.file.path });
+});
 
 // Setting-up GraphQL
 app.use(
