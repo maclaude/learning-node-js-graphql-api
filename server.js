@@ -19,6 +19,8 @@ const graphqlHttp = require('express-graphql');
  */
 const graphqlSchema = require('./graphql/schema');
 const graphqlResolvers = require('./graphql/resolvers');
+// Middlewares
+const auth = require('./middlewares/auth');
 
 /**
  * Code
@@ -83,6 +85,9 @@ app.use((req, res, next) => {
   }
   return next();
 });
+
+// Setting auth status middleware
+app.use(auth);
 
 // Setting-up GraphQL
 app.use(

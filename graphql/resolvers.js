@@ -96,6 +96,13 @@ module.exports = {
   },
 
   createPost: async ({ postInput }, req) => {
+    // Checking user authentication status
+    if (!req.isAuth) {
+      const error = new Error('User is not authenticated');
+      error.code = 401;
+      throw error;
+    }
+
     /**
      * Validation
      */
@@ -118,7 +125,15 @@ module.exports = {
     if (errors.length > 0) {
       const error = new Error('Invalid input');
       error.data = errors;
-      error.ode = 422;
+      error.code = 422;
+      throw error;
+    }
+
+    // Finding user by id
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new Error('Invalid user');
+      error.code = 401;
       throw error;
     }
 
@@ -130,11 +145,14 @@ module.exports = {
     });
     // Saving the new post
     const createdPost = await newPost.save();
-    // @TODO add post to user's posts
+
+    // Add createdPost to user's posts
+    user.posts.push(createdPost);
 
     return {
       ...createdPost._doc,
       _id: createdPost._id.toString(),
+      creator: user,
       createdAt: createdPost.createdAt.toISOString(),
       updatedAt: createdPost.updatedAt.toISOString(),
     };
