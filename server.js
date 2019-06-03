@@ -87,6 +87,16 @@ app.use(
     schema: graphqlSchema,
     rootValue: graphqlResolvers,
     graphiql: true, // Access to GraphiQL: http://localhost:8000/graphql
+    // Formatting error
+    formatError(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const { data } = err.originalError;
+      const message = err.message || 'An error occured';
+      const code = err.originalError.code || 500;
+      return { message, status: code, data };
+    },
   })
 );
 
