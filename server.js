@@ -97,7 +97,7 @@ app.use(
     rootValue: graphqlResolvers,
     graphiql: true, // Access to GraphiQL: http://localhost:8000/graphql
     // Formatting error
-    formatError(err) {
+    customFormatErrorFn(err) {
       if (!err.originalError) {
         return err;
       }

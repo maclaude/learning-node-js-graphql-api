@@ -160,7 +160,7 @@ module.exports = {
     };
   },
 
-  posts: async (args, req) => {
+  posts: async ({ page }, req) => {
     // Checking user authentication status
     if (!req.isAuth) {
       const error = new Error('User is not authenticated');
@@ -168,9 +168,16 @@ module.exports = {
       throw error;
     }
 
+    // If page is undefined set it to 1
+    const currentPage = page || 1;
+    // Defining number of post per page
+    const POST_PER_PAGE = 2;
+
     const totalPosts = await Post.find().countDocuments();
     const posts = await Post.find()
       .sort({ createdAt: -1 })
+      .skip((currentPage - 1) * POST_PER_PAGE)
+      .limit(POST_PER_PAGE)
       .populate('creator');
 
     return {
