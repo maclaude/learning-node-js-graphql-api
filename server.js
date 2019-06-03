@@ -80,12 +80,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Setting-up graphQL
+// Setting-up GraphQL
 app.use(
   '/graphql',
   graphqlHttp({
     schema: graphqlSchema,
     rootValue: graphqlResolvers,
+    graphiql: true, // Access to GraphiQL: http://localhost:8000/graphql
   })
 );
 
