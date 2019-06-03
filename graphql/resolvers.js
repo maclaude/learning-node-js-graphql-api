@@ -3,6 +3,7 @@
  * NPM import
  */
 const bcrypt = require('bcryptjs');
+const validator = require('validator');
 
 /**
  * Local import
@@ -16,6 +17,23 @@ const User = require('../models/user');
 module.exports = {
   createUser: async ({ userInput }, req) => {
     // const email = args.userInput.email;
+
+    const errors = [];
+    // Email validation
+    if (!validator.isEmail(userInput.email)) {
+      errors.push({ message: 'Email is invalid' });
+    }
+    // Password validation
+    if (
+      validator.isEmpty(userInput.password) ||
+      !validator.isLength(userInput.password, { min: 5 })
+    ) {
+      errors.push({ message: 'Password is too short' });
+    }
+    if (errors.length > 0) {
+      const error = new Error('Invalid input');
+      throw error;
+    }
 
     // Finding if a user already exists with this email
     const existingUser = await User.findOne({ email: userInput.email });
