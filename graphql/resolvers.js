@@ -142,19 +142,45 @@ module.exports = {
       title: postInput.title,
       content: postInput.content,
       imageUrl: postInput.imageUrl,
+      creator: user,
     });
     // Saving the new post
     const createdPost = await newPost.save();
 
     // Add createdPost to user's posts
     user.posts.push(createdPost);
+    // Saving user update
+    await user.save();
 
     return {
       ...createdPost._doc,
       _id: createdPost._id.toString(),
-      creator: user,
       createdAt: createdPost.createdAt.toISOString(),
       updatedAt: createdPost.updatedAt.toISOString(),
+    };
+  },
+
+  posts: async (args, req) => {
+    // Checking user authentication status
+    if (!req.isAuth) {
+      const error = new Error('User is not authenticated');
+      error.code = 401;
+      throw error;
+    }
+
+    const totalPosts = await Post.find().countDocuments();
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate('creator');
+
+    return {
+      posts: posts.map(post => ({
+        ...post._doc,
+        _id: post._id.toString(),
+        createdAt: post.createdAt.toISOString(),
+        updatedAt: post.updatedAt.toISOString(),
+      })),
+      totalPosts,
     };
   },
 };
