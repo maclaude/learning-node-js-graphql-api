@@ -19,7 +19,6 @@ const Post = require('../models/post');
 module.exports = {
   createUser: async ({ userInput }, req) => {
     // const email = args.userInput.email;
-
     /**
      * Validation
      */
@@ -149,7 +148,7 @@ module.exports = {
 
     // Add createdPost to user's posts
     user.posts.push(createdPost);
-    // Saving user update
+    // Saving updated user
     await user.save();
 
     return {
