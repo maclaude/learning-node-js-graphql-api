@@ -11,6 +11,7 @@ const jwt = require('jsonwebtoken');
  */
 // Models
 const User = require('../models/user');
+const Post = require('../models/post');
 
 /**
  * Code
@@ -19,18 +20,22 @@ module.exports = {
   createUser: async ({ userInput }, req) => {
     // const email = args.userInput.email;
 
+    /**
+     * Validation
+     */
     const errors = [];
-    // Email validation
+    // Email
     if (!validator.isEmail(userInput.email)) {
       errors.push({ message: 'Email is invalid' });
     }
-    // Password validation
+    // Password
     if (
       validator.isEmpty(userInput.password) ||
       !validator.isLength(userInput.password, { min: 5 })
     ) {
       errors.push({ message: 'Password is too short' });
     }
+    // If errors, throw an error
     if (errors.length > 0) {
       const error = new Error('Invalid input');
       error.data = errors;
@@ -88,5 +93,50 @@ module.exports = {
     );
     // Return a token & userId
     return { token, userId: user._id.toString() };
+  },
+
+  createPost: async ({ postInput }, req) => {
+    /**
+     * Validation
+     */
+    const errors = [];
+    // Title
+    if (
+      validator.isEmpty(postInput.title) ||
+      !validator.isLength(postInput.title, { min: 5 })
+    ) {
+      errors.push({ message: 'Title is invalid' });
+    }
+    // Content
+    if (
+      validator.isEmpty(postInput.content) ||
+      !validator.isLength(postInput.content, { min: 5 })
+    ) {
+      errors.push({ message: 'Content is invalid' });
+    }
+    // If errors, throw an error
+    if (errors.length > 0) {
+      const error = new Error('Invalid input');
+      error.data = errors;
+      error.ode = 422;
+      throw error;
+    }
+
+    // Creating a new Post
+    const newPost = new Post({
+      title: postInput.title,
+      content: postInput.content,
+      imageUrl: postInput.imageUrl,
+    });
+    // Saving the new post
+    const createdPost = await newPost.save();
+    // @TODO add post to user's posts
+
+    return {
+      ...createdPost._doc,
+      _id: createdPost._id.toString(),
+      createdAt: createdPost.createdAt.toISOString(),
+      updatedAt: createdPost.updatedAt.toISOString(),
+    };
   },
 };
