@@ -343,4 +343,30 @@ module.exports = {
 
     return { ...user._doc, _id: user._id.toString() };
   },
+
+  updateStatus: async ({ status }, req) => {
+    // Checking user authentication status
+    if (!req.isAuth) {
+      const error = new Error('User is not authenticated');
+      error.code = 401;
+      throw error;
+    }
+
+    // Finding the user
+    const user = await User.findById(req.userId);
+
+    // If no user founded, throw an error
+    if (!user) {
+      const error = new Error('No user found');
+      error.code = 404;
+      throw error;
+    }
+
+    // Updating the user status
+    user.status = status;
+    // Saving the updated user
+    await user.save();
+
+    return { ...user._doc, _id: user._id.toString() };
+  },
 };
