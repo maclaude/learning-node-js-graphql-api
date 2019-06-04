@@ -12,6 +12,8 @@ const jwt = require('jsonwebtoken');
 // Models
 const User = require('../models/user');
 const Post = require('../models/post');
+// Utils
+const deleteFile = require('../utils/delete-file');
 
 /**
  * Code
@@ -280,5 +282,44 @@ module.exports = {
       createdAt: updatedPost.createdAt.toISOString(),
       updatedAt: updatedPost.updatedAt.toISOString(),
     };
+  },
+
+  deletePost: async ({ id }, req) => {
+    // Checking user authentication status
+    if (!req.isAuth) {
+      const error = new Error('User is not authenticated');
+      error.code = 401;
+      throw error;
+    }
+
+    // Finding post by id
+    const post = await Post.findById(id);
+
+    // If no post founded, throw an error
+    if (!post) {
+      const error = new Error('No post found');
+      error.code = 404;
+      throw error;
+    }
+
+    // Checking if the post's creator is the logged in user
+    if (post.creator.toString() !== req.userId.toString()) {
+      const error = new Error('Not authorized');
+      error.code = 403;
+      throw error;
+    }
+
+    // Deleting the post's image
+    deleteFile(post.imageUrl);
+    // Deleting the post
+    await Post.findByIdAndRemove(id);
+    // Finding the user
+    const user = await User.findById(req.userId);
+    // Deleting the post from user's posts
+    user.posts.pull(id);
+    // Saving the updated user
+    await user.save();
+
+    return true;
   },
 };
